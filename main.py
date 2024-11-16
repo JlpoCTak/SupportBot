@@ -10,7 +10,7 @@ import bot.handlers.users.users as users
 
 async def main() -> None:
     """
-    Главная функция запускающая бота теставп
+    Главная функция запускающая бота
     """
     dp.include_routers(users.router)
     await bot.delete_webhook(drop_pending_updates=True)

@@ -16,4 +16,6 @@ dp = Dispatcher(storage=storage)
 
 # Initialize the SQLite database connection
 db = sqlite3.connect('databases/database.db')
+db_question = sqlite3.connect('databases/question.db')
+db_answer = sqlite3.connect('databases/answers.db')
 

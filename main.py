@@ -6,13 +6,15 @@ import os
 from loader import *
 
 import bot.handlers.users.users as users
+import bot.handlers.admins.admins as admins
+import bot.handlers.supports.supports as supports
 
 
 async def main() -> None:
     """
     Главная функция запускающая бота
     """
-    dp.include_routers(users.router)
+    dp.include_routers(users.router, admins.router, supports.router)
     await bot.delete_webhook(drop_pending_updates=True)
     await dp.start_polling(bot, allowed_updates=dp.resolve_used_update_types())
 

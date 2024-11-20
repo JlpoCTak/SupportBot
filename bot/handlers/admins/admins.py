@@ -1,13 +1,25 @@
 import logging
-from loader import dp, bot, router_admin
+from loader import db
 from aiogram.filters import Command
+from aiogram import F
+from aiogram import Router
 from aiogram import types
-# from bot.keyboards.inline.admin_btn import main_admin_panel_btn
+from bot.keyboards.admins import admin_panel
 from bot.filters.admin import IsAdmin
 from aiogram.fsm.context import FSMContext
+from aiogram.fsm.state import State, StatesGroup
 
-@router_admin.callback_query(AdminCallback.filter(F.action == "main_adm_panel"), IsAdmin())
-async def main_panel(call: types.CallbackQuery, state: FSMContext):
+router = Router()
+
+
+class Actions(StatesGroup):
+    usual = State()
+    add_sup = State()
+    del_sup = State()
+
+
+@router.message(Command('adminpanel'), IsAdmin())
+async def main_panel(msg: types.Message, state: FSMContext):
     """
     Handles the callback query for navigating to the main admin panel.
 
@@ -28,21 +40,71 @@ async def main_panel(call: types.CallbackQuery, state: FSMContext):
     - Catches and logs any exceptions that occur during the execution, ensuring that errors are recorded for debugging.
     """
     try:
-        cid = call.from_user.id  # The ID of the admin who initiated the action
-        mid = call.message.message_id  # The ID of the message to be updated
-        lang = call.from_user.language_code  # The language code for translation
-
+        cid = msg.from_user.id  # The ID of the admin who initiated the action
+        mid = msg.message_id  # The ID of the message to be updated
+        chatid = msg.chat.id
         # Translate the greeting message
-        text = "👩‍💻Hello, dear admin, welcome to the main panel!"
+        text = "👩‍💻Привет админ, добро пожаловать в админ панель"
 
         # Edit the message with the translated text and update it with the main admin panel buttons
-        await bot.edit_message_text(chat_id=cid,
-                                    message_id=mid,
-                                    text=f'{text}',
-                                    reply_markup=main_admin_panel_btn(cid=cid, lang=lang))
+        await msg.answer(text, reply_markup=admin_panel())
 
-        # Update FSM state with the current message ID
-        await state.update_data({"message_id": call.message.message_id})
     except Exception as err:
         # Log any errors that occur during execution
         logging.error(err)
+
+
+@router.message(F.text == 'Добавить саппорта', IsAdmin())
+async def tell_username_add_sup(msg: types.Message, state: FSMContext):
+    await state.set_state(Actions.add_sup)
+    await msg.answer('Введите username пользователя которого хотите добавить с знаком \'@\'')
+
+
+@router.message(F.text == 'Удалить саппорта', IsAdmin())
+async def tell_username_del_support(msg: types.Message, state: FSMContext):
+    await state.set_state(Actions.del_sup)
+    await msg.answer('Введите username пользователя которого хотите удалить с знаком \'@\'')
+
+
+@router.message(F.text.startswith('@'), IsAdmin(), Actions.add_sup)
+async def add_support(msg: types.Message, state: FSMContext):
+    username_to_add = msg.text[1:]
+    with db as connection:
+        cursor = connection.cursor()
+        data_user = cursor.execute('Select * From Users Where telegram_user_username = ?',
+                                   (username_to_add,)).fetchall()
+        if data_user == []:
+            await msg.answer('Данного пользователя нет в нашей базе данных.\n'
+                             'Проверьте верность вводимых данных или попросите пользователя перейти в данного бота и нажать кнопку \"Начать\"')
+            await msg.answer_photo(photo=types.FSInputFile('databases/img/qr.png'))
+        else:
+            data_user = [x for x in data_user[0]]
+            cursor.execute(
+                'Insert Into Supports (telegram_user_fullname, telegram_user_username, telegram_user_id)'
+                ' Values (?, ?, ?)',
+                (data_user[1], data_user[2], data_user[3],))
+            await msg.answer('Оператор службы поддержки успешно добавлен')
+            connection.commit()
+
+    await state.set_state(Actions.usual)
+
+
+@router.message(F.text.startswith('@'), IsAdmin(), Actions.del_sup)
+async def add_support(msg: types.Message, state: FSMContext):
+    username_to_del = msg.text[1:]
+    with db as connection:
+        cursor = connection.cursor()
+        data_user = cursor.execute('Select * From Supports Where telegram_user_username = ?',
+                                   (username_to_del,)).fetchall()
+        if data_user == []:
+            await msg.answer('Данного пользователя нет в нашей базе данных.\n'
+                             'Проверьте верность вводимых данных')
+        else:
+            data_user = [x for x in data_user[0]]
+            cursor.execute(
+                'Delete From Supports Where telegram_user_username = ?',
+                (username_to_del,))
+            await msg.answer('Оператор службы поддержки успешно удалён')
+            connection.commit()
+
+    await state.set_state(Actions.usual)

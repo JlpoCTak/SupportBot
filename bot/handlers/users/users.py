@@ -2,8 +2,7 @@ import sqlite3
 
 from aiogram import types
 from aiogram.filters import Command
-from aiogram import Bot, Dispatcher, Router
-from bot.filters.supports import IsSupport
+from aiogram import Router
 from loader import db, storage, dp
 
 router = Router()
@@ -36,6 +35,6 @@ async def start_handler(msg: types.Message):
     #   раскоментить при продакте
 
 
-@router.message(IsSupport(storage.get_data(0)))
-async def start_handler(msg: types.Message):
-    await msg.answer('fgfgsad')
+# @router.message(IsSupport(storage.get_data(0)))
+# async def start_handler(msg: types.Message):
+#     await msg.answer('fgfgsad')

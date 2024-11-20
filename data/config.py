@@ -10,8 +10,9 @@ def admin() -> int:
     '''
     with sqlite3.connect('./databases/database.db') as connection:
         cursor = connection.cursor()
-        id = cursor.execute('Select telegram_user_id from Superadmin').fetchall()[0][0]
+        id = int(cursor.execute('Select telegram_user_id from Superadmin').fetchall()[0][0])
         return id
+
 
 def support() -> int:
     '''
@@ -23,6 +24,6 @@ def support() -> int:
         id = cursor.execute('Select telegram_user_id from Superadmin').fetchall()[0][0]
         return id
 
+
 TOKEN = os.getenv('TOKEN')
 ADMIN = admin()
-

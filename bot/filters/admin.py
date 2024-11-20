@@ -1,4 +1,3 @@
-
 from aiogram.filters import BaseFilter
 from aiogram.types import Message
 from data.config import ADMIN
@@ -54,11 +53,18 @@ class IsAdmin(BaseFilter):
         Returns:
             bool: True if the user is an admin or the super admin, False otherwise.
         """
+
+        with db as connection:
+            cursor = connection.cursor()
+            admins = cursor.execute('Select telegram_user_id From Admins')
+            admins_k = []
+            for _ in admins:
+                admins_k.append(int(_[0]))
+
         self.cid = message.from_user.id
-        self.dada = db.select_admin(cid=self.cid)
         if self.cid == ADMIN:
             return True
-        elif self.dada is not None:
+        elif self.cid in admins_k:
             return True
         else:
             return False

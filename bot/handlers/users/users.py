@@ -56,9 +56,7 @@ async def start_handler(msg: types.Message, state: FSMContext):
     while flag:
         if await check_answer(msg.from_user.id, msg.message_id) is None:
             await asyncio.sleep(3)
-            print('ждём')
         else:
             flag = False
             data = await check_answer(msg.from_user.id, msg.message_id)
-            print('получаем данные')
             await msg.reply(text=data[4])

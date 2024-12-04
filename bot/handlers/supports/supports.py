@@ -1,6 +1,4 @@
 import logging
-from loader import db_question, db_answer
-
 from aiogram.filters import Command
 from aiogram import F
 from aiogram import Router
@@ -10,6 +8,9 @@ from bot.filters.supports import IsSupport
 from aiogram.fsm.context import FSMContext
 from aiogram.fsm.state import State, StatesGroup
 
+from loader import db_question, db_answer
+from bot.keyboards.supports import sup_panel
+
 router = Router()
 
 
@@ -17,6 +18,19 @@ class Actions(StatesGroup):
     usual = State()
     work = State()
     answer_question = State()
+
+
+@router.message(Command('supportpanel'), IsSupport())
+async def support_panel(msg: types.Message, state: FSMContext):
+    try:
+        text = "👩‍💻Привет саппорт, добро пожаловать в саппорт панель"
+
+        await msg.answer(text, reply_markup=sup_panel())
+        await state.set_state(Actions.usual)
+
+    except Exception as err:
+        # Log any errors that occur during execution
+        logging.error(err)
 
 
 @router.message(Command('startwork'), Actions.usual, IsSupport())

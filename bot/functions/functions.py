@@ -9,5 +9,4 @@ async def check_answer(user_id, msg_id):
         if not data:
             return None
         else:
-            print(data)
             return data

@@ -8,7 +8,7 @@ from aiogram import Router
 from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
-from loader import db_question, db_answer
+from loader import db_question, db_answer, db
 from bot.functions.functions import check_answer
 
 router = Router()
@@ -36,13 +36,12 @@ async def start_handler(msg: types.Message, state: FSMContext):
     telegram_user_username = msg.from_user.username
     telegram_user_fullname = msg.from_user.full_name
     user = User(telegram_user_fullname, telegram_user_username, telegram_user_id)
-    # with db as connection:
-    #     cursor = connection.cursor()
-    #     cursor.execute('''INSERT INTO Users (telegram_user_fullname,
-    #     telegram_user_username, telegram_user_id) VALUES (?, ?, ?)''',
-    #                    (user.telegram_user_fullname, user.telegram_user_username, user.telegram_user_id))
-    #     connection.commit()
-    #   раскоментить при продакте
+    with db as connection:
+        cursor = connection.cursor()
+        cursor.execute('''INSERT INTO Users (telegram_user_fullname,
+        telegram_user_username, telegram_user_id) VALUES (?, ?, ?)''',
+                       (user.telegram_user_fullname, user.telegram_user_username, user.telegram_user_id))
+        connection.commit()
 
 
 @router.message(Actions.chatting)

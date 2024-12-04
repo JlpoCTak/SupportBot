@@ -20,25 +20,6 @@ class Actions(StatesGroup):
 
 @router.message(Command('adminpanel'), IsAdmin())
 async def main_panel(msg: types.Message, state: FSMContext):
-    """
-    Handles the callback query for navigating to the main admin panel.
-
-    Parameters:
-    - call (types.CallbackQuery): The callback query object containing information about the user's action.
-    - state (FSMContext): The FSM context to manage the bot's state during the conversation.
-
-    Functionality:
-    - Retrieves the admin's user ID (`cid`), the message ID (`mid`), and the language code (`lang`) from the callback query.
-    - Translates a greeting message to the admin in their preferred language.
-    - Edits the original message in the chat to display the translated greeting and the main admin panel buttons.
-    - Updates the FSM state with the current message ID.
-
-    Returns:
-    - This function is asynchronous and does not return a value. It interacts with the Telegram API to update messages and manage the state.
-
-    Error Handling:
-    - Catches and logs any exceptions that occur during the execution, ensuring that errors are recorded for debugging.
-    """
     try:
         cid = msg.from_user.id  # The ID of the admin who initiated the action
         mid = msg.message_id  # The ID of the message to be updated

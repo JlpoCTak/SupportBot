@@ -9,7 +9,7 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.fsm.context import FSMContext
 
 from loader import db_question, db_answer, db
-from bot.functions.functions import check_answer
+from bot.functions.functions import check_answer, find_similar_question
 
 router = Router()
 
@@ -45,17 +45,21 @@ async def start_handler(msg: types.Message, state: FSMContext):
 
 
 @router.message(Actions.chatting)
-async def start_handler(msg: types.Message, state: FSMContext):
-    with db_question as connection:
-        cursor = connection.cursor()
-        cursor.execute('INSERT Into Questions (user_id, msg_id, text_question) Values (?, ?, ?)',
-                       (msg.from_user.id, msg.message_id, msg.text))
-    await msg.answer('Дождитесь ответа')
-    flag = True
-    while flag:
-        if await check_answer(msg.from_user.id, msg.message_id) is None:
-            await asyncio.sleep(3)
-        else:
-            flag = False
-            data = await check_answer(msg.from_user.id, msg.message_id)
-            await msg.reply(text=data[4])
+async def chatting_handler(msg: types.Message, state: FSMContext):
+    answer = await find_similar_question(msg.text)
+    if answer is not None:
+        await msg.reply(answer)
+    else:
+        with db_question as connection:
+            cursor = connection.cursor()
+            cursor.execute('INSERT Into Questions (user_id, msg_id, text_question) Values (?, ?, ?)',
+                           (msg.from_user.id, msg.message_id, msg.text))
+        await msg.answer('Дождитесь ответа')
+        flag = True
+        while flag:
+            if await check_answer(msg.from_user.id, msg.message_id) is None:
+                await asyncio.sleep(3)
+            else:
+                flag = False
+                data = await check_answer(msg.from_user.id, msg.message_id)
+                await msg.reply(text=data[4])

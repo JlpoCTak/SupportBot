@@ -1,6 +1,5 @@
 import sqlite3
 
-
 def user_db():
     connection = sqlite3.connect('databases/database.db')
     cursor = connection.cursor()
@@ -93,6 +92,7 @@ def create_table_active_sup():
 
 # create_table_active_sup()
 
+
 def create_table_answers():
     connection = sqlite3.connect('databases/answers.db')
     cursor = connection.cursor()
@@ -106,5 +106,4 @@ def create_table_answers():
         )
         ''')
 
-create_table_answers()
-
+# create_table_answers()

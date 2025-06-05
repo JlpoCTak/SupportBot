@@ -81,6 +81,6 @@ async def answer_question(msg: types.Message, state: FSMContext):
     await state.set_state(Actions.work)
 
 
-@router.message(Command('stateusual'), IsSupport())  # костыль
+@router.message(Command('stateusual'), IsSupport())
 async def steteusual(msg: types.Message, state: FSMContext):
     await state.set_state(Actions.usual)

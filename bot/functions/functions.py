@@ -25,7 +25,7 @@ async def check_unanswer_question():  # проверка неотвеченны�
         with db_question as connection:
             cursor = connection.cursor()
             data = cursor.execute('Select * From Questions')
-            if data:
+            if not data:
                 active_sups = cursor.execute('Select user_id From active_supports')
                 for support in active_sups:
                     await bot.send_message(chat_id=support[0], text='Появились вопросы')
